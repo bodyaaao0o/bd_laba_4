@@ -8,3 +8,4 @@ def register_routes(app: Flask) -> None:
     from .orders.user_route import user_bp
 
     app.register_blueprint(user_bp)
+    app.register_blueprint(chat_bp)

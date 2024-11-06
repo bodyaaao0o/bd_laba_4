@@ -5,6 +5,8 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy_utils import database_exists, create_database
 
+from back_flask_bd.app.my_project.auth.route.orders.chat_route import chat_bp
+
 # Константи для налаштувань
 SECRET_KEY = "SECRET_KEY"
 SQLALCHEMY_DATABASE_URI = "SQLALCHEMY_DATABASE_URI"
@@ -28,7 +30,7 @@ def create_app(app_config: Dict[str, Any], additional_config: Dict[str, Any]) ->
 
     # Реєстрація `Blueprint`
     app.register_blueprint(user_bp)
-
+    app.register_blueprint(chat_bp)
     print("User blueprint registered successfully!")
     for rule in app.url_map.iter_rules():
         print(f"Route: {rule}, Endpoint: {rule.endpoint}")

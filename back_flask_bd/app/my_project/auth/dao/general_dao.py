@@ -1,10 +1,11 @@
 from abc import ABC
 from typing import List
-
+from flask_sqlalchemy import SQLAlchemy
+db = SQLAlchemy()
 from sqlalchemy import inspect
 from sqlalchemy.orm import Mapper
 
-from back_flask_bd.app.my_project import db
+
 
 
 class GeneralDao(ABC):
@@ -30,15 +31,21 @@ class GeneralDao(ABC):
         self._session.commit()
         return objs
 
-    def update(self,key: int, in_obj: object) -> object:
-
+    def update(self, key: int, in_obj: object) -> None:
         domain_obj = self._session.query(self._domain_type).get(key)
-        mapper: Mapper = inspect(type(in_obj))
-        columns = mapper.columns._collection
-        for colomn_name, colomn_obj, *_ in columns:
-            if not colomn_obj.primary_key:
-                value = getattr(in_obj, colomn_name)
-                setattr(in_obj, colomn_name, value)
+        if domain_obj is None:
+            raise ValueError("Object not found")
+
+        # Отримайте маппер для вашої моделі
+        mapper = inspect(self._domain_type)
+        columns = mapper.columns
+
+        # Оновлення атрибутів
+        for column in columns:
+            if not column.primary_key:
+                value = getattr(in_obj, column.name)
+                setattr(domain_obj, column.name, value)
+
         self._session.commit()
 
     def patch(self, key: int, field_name: str, value: object) -> None:

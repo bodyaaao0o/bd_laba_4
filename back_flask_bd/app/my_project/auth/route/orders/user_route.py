@@ -1,4 +1,6 @@
 from http import HTTPStatus
+from os import abort
+
 from flask import Blueprint, jsonify, Response, request, make_response
 from back_flask_bd.app.my_project.auth.controller import user_controller
 from back_flask_bd.app.my_project.auth.domain import User
@@ -14,11 +16,16 @@ def get_all_users() -> Response:
 @user_bp.post('/')
 def create_user() -> Response:
     content = request.get_json()
-    user = User.create_user(content)  # Викликаємо метод create_user
-    user_dto = user.put_into_dto()    # Перетворюємо в DTO
-    user_controller.create(user_dto)  # Створюємо користувача через контролер
-    return make_response(jsonify(user_dto), HTTPStatus.CREATED)
-  # Повертаємо відповідь з DTO користувача
+
+    # Створіть об'єкт моделі User безпосередньо з отриманого контенту
+    user = User.create_user(content)  # Припустимо, що create_user повертає екземпляр User
+
+    # Тепер передайте екземпляр моделі до контролера
+    user_controller_instance = user_controller()
+    user_controller_instance.create(user)  # Передайте об'єкт моделі, а не словник
+
+    return make_response(jsonify(user.put_into_dto()), HTTPStatus.CREATED)
+
 
 
 @user_bp.get('/<int:user_id>')
@@ -26,12 +33,22 @@ def get_user(user_id: int) -> Response:
     user_controller_instance = user_controller()
     return make_response(jsonify(user_controller_instance.find_by_id(user_id)), HTTPStatus.OK)
 
+
 @user_bp.put('/<int:user_id>')
 def update_user(user_id: int) -> Response:
     content = request.get_json()
-    user = User.create_from_dto(content)
-    user_controller.update(user_id, content)
-    return make_response("User updated", HTTPStatus.OK)
+
+    if content is None:
+        abort(HTTPStatus.BAD_REQUEST, "No data provided")
+
+    # Переконайтеся, що ви створюєте об'єкт правильно
+    user = User.create_from_dto(content)  # Переконайтеся, що метод create_from_dto правильно працює
+
+    user_controller_instance = user_controller()
+    user_controller_instance.update(user_id, user)  # Передайте екземпляр моделі
+
+    return make_response("User  updated", HTTPStatus.OK)
+
 
 @user_bp.patch('/<int:user_id>')
 def patch_user(user_id: int) -> Response:

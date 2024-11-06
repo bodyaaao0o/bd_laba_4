@@ -18,7 +18,7 @@ class GeneralService(ABC):
     def create_all(self, obj_list: List[object]) -> List[object]:
         return self._dao.create_all(obj_list)
 
-    def update(self,key: int, obj: object) -> None:
+    def update(self, key: int, obj: object) -> None:
         self._dao.update(key, obj)
 
     def patch(self, key: int, field_name: str, value: object) -> None:
